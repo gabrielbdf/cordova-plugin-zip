@@ -54,7 +54,8 @@ public class Zip extends CordovaPlugin {
         InputStream inputStream = null;
         try {
             String zipFileName = args.getString(0);
-            String outputDirectory = args.getString(1);
+            String outputDirectory = "file://" + args.getString(1);
+
 
             // Since Cordova 3.3.0 and release of File plugins, files are accessed via cdvfile://
             // Accept a path or a URI for the source zip.
@@ -125,14 +126,15 @@ public class Zip extends CordovaPlugin {
                    File dir = new File(outputDirectory + compressedName);
                    dir.mkdirs();
                 } else {
-                    File file = new File(outputDirectory + compressedName);
-                    String canonicalPath = file.getCanonicalPath();
-                    if (!canonicalPath.startsWith(outputDirectory)) {
-                        String errorMessage = "Zip traversal security error";
-                        callbackContext.error(errorMessage);
-                        Log.e(LOG_TAG, errorMessage);
-                        return;
-                    }
+                  File file = new File(outputDirectory + compressedName);
+                  String canonicalDestinationPath = (new File(outputDirectory)).getCanonicalPath();
+                  String canonicalPath = file.getCanonicalPath();
+                  if (!canonicalPath.startsWith(canonicalDestinationPath)) {
+                    String errorMessage = "Zip traversal security error";
+                    callbackContext.error(errorMessage);
+                    Log.e(LOG_TAG, errorMessage);
+                    return;
+                  }
                     file.getParentFile().mkdirs();
                     if(file.exists() || file.createNewFile()){
                         Log.w("Zip", "extracting: " + file.getPath());
